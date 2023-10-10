@@ -22,49 +22,67 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+**Introduction**
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+This is a Nest.js gRPC client application for file management. It uses the same proto file as the .NET Core 7 gRPC server.
 
-## Installation
+**Prerequisites**
 
-```bash
-$ npm install
+* Nest.js
+* Node.js
+* gRPC (@grpc/proto-loader and ts-proto) and protoc
+* rxjs (for stream communication)
+
+**Building and running the application**
+
+To build and run the application, run the following commands:
+
+```
+npm install
+npm run build
 ```
 
-## Running the app
+**Usage**
 
-```bash
-# development
-$ npm run start
+The application exposes three endpoints:
 
-# watch mode
-$ npm run start:dev
+* `/file-controller/download` - Downloads a file from the server.
+* `/file-controller/upload` - Uploads a file to the server.
+* `/file-controller/get-file-path` - Gets the path of a file on the server.
 
-# production mode
-$ npm run start:prod
+**Download a file**
+
+To download a file from the server, send a GET request to the `/file-controller/download` endpoint with the file name and extension as query parameters. The endpoint will return a stream of bytes, which you can write to a file on your local machine.
+
+**Example:**
+
+```
+curl localhost:5001/file-controller/download?fileName=my-file.txt&fileExtension=txt
 ```
 
-## Test
+**Upload a file**
 
-```bash
-# unit tests
-$ npm run test
+To upload a file to the server, send a POST request to the `/file-controller/upload` endpoint with the file as a form data parameter. The endpoint will save the file to the server.
 
-# e2e tests
-$ npm run test:e2e
+**Example:**
 
-# test coverage
-$ npm run test:cov
+```
+curl -F "file=@my-file.txt" localhost:5001/file-controller/upload
 ```
 
-## Support
+**Get the path of a file**
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+To get the path of a file on the server, send a GET request to the `/file-controller/get-file-path` endpoint with the file name and extension as query parameters. The endpoint will return the path of the file on the server.
 
-## Stay in touch
+**Example:**
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
+```
+curl localhost:5001/file-controller/get-file-path?fileName=my-file.txt&fileExtension=txt
+```
+
+**Conclusion**
+
+This is a simple Nest.js gRPC client application for file management. It can be used to download, upload, and get the path of files on a server.
 - Website - [https://nestjs.com](https://nestjs.com/)
 - Twitter - [@nestframework](https://twitter.com/nestframework)
 
