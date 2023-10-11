@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { Observable, ReplaySubject } from 'rxjs';
 import { ClientGrpc } from '@nestjs/microservices';
 import { FileServiceClient, FILE_SERVICE_NAME, FileInfo, BytesContent, FilePath } from '../file';
+import { writeFile } from 'fs';
 
 @Injectable()
 export class FileService {
@@ -16,8 +17,53 @@ export class FileService {
     this.fileService = this.grpcClient.getService<FileServiceClient>(FILE_SERVICE_NAME);
   }
 
-  fileDownLoad(info: FileInfo): Observable<BytesContent> {
-    return this.fileService.fileDownLoad(info);
+  async fileDownLoad(info: FileInfo): Promise<void> {
+    const fileStream: Observable<BytesContent> =
+      this.fileService.fileDownLoad(info);
+
+    // create file from stream
+    const fileData: BytesContent = {
+      buffer: Buffer.alloc(0),
+      fileSize: 0,
+      info: {
+        fileName: '',
+        fileExtension: '',
+      },
+      readedByte: 0,
+    };
+
+    // write file when stream is completed
+    await new Promise((resolve) => {
+      fileStream.subscribe({
+        next: (resFile: BytesContent) => {
+          fileData.buffer = Buffer.concat([fileData.buffer, resFile.buffer]);
+          fileData.fileSize = resFile.fileSize;
+          fileData.info = resFile.info;
+          fileData.readedByte = resFile.readedByte;
+        },
+        error: (err) => {
+          console.error(err);
+        },
+        complete: () => {
+          writeFile(
+            `${fileData.info!.fileName}${fileData.info!.fileExtension}`,
+            fileData.buffer,
+            (err) => {
+              if (err) {
+                console.error(err);
+                return;
+              }
+              console.log(
+                `${fileData.info!.fileName}${
+                  fileData.info!.fileExtension
+                } was saved successfully.`,
+              );
+            },
+          );
+        },
+      });
+      resolve(fileData);
+    });
   }
 
   async fileUpLoad(file: Express.Multer.File): Promise<void> {

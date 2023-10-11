@@ -8,10 +8,8 @@ import {
 } from '@nestjs/common';
 import { FileService } from './file.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { writeFile } from 'fs';
-import { Observable } from 'rxjs';
-import { BytesContent, FilePath } from 'src/file';
 import { Request } from 'express';
+import { FilePath } from 'src/file';
 
 @Controller('file-controller')
 export class FileController {
@@ -24,53 +22,7 @@ export class FileController {
       fileName: fileName as string,
       fileExtension: fileExtension as string,
     };
-
-    const fileStream: Observable<BytesContent> =
-      this.fileService.fileDownLoad(info);
-
-    // create file from stream
-    const fileData: BytesContent = {
-      buffer: Buffer.alloc(0),
-      fileSize: 0,
-      info: {
-        fileName: '',
-        fileExtension: '',
-      },
-      readedByte: 0,
-    };
-
-    // write file when stream is completed
-    await new Promise((resolve) => {
-      fileStream.subscribe({
-        next: (resFile: BytesContent) => {
-          fileData.buffer = Buffer.concat([fileData.buffer, resFile.buffer]);
-          fileData.fileSize = resFile.fileSize;
-          fileData.info = resFile.info;
-          fileData.readedByte = resFile.readedByte;
-        },
-        error: (err) => {
-          console.error(err);
-        },
-        complete: () => {
-          writeFile(
-            `${fileData.info!.fileName}${fileData.info!.fileExtension}`,
-            fileData.buffer,
-            (err) => {
-              if (err) {
-                console.error(err);
-                return;
-              }
-              console.log(
-                `${fileData.info!.fileName}${
-                  fileData.info!.fileExtension
-                } was saved successfully.`,
-              );
-            },
-          );
-        },
-      });
-      resolve(fileData);
-    });
+    return this.fileService.fileDownLoad(info);
   }
 
   @Post('upload')
